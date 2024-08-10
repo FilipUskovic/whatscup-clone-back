@@ -6,6 +6,7 @@ import org.jilt.Builder;
 
 @Builder
 public class Authority {
+
     private AuthorityName name;
 
     public Authority(AuthorityName name) {

@@ -5,11 +5,11 @@
   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
 
 
-  <changeSet id="00000000000003-message-binary-content-seq" author="codecake">
+  <changeSet id="00000000000003-message-binary-content-seq" author="myuser">
     <createSequence sequenceName="message_binary_content_sequence" startValue="1" incrementBy="1"/>
   </changeSet>
 
-  <changeSet id="00000000000003-message-binary-content" author="codecake">
+  <changeSet id="00000000000003-message-binary-content" author="myuser">
     <createTable tableName="message_binary_content">
       <column name="id" type="bigint">
         <constraints primaryKey="true" nullable="false"/>
@@ -26,11 +26,11 @@
   </changeSet>
 
 
-  <changeSet id="00000000000003-message-seq" author="codecake">
+  <changeSet id="00000000000003-message-seq" author="myuser">
     <createSequence sequenceName="message_sequence" startValue="1" incrementBy="1"/>
   </changeSet>
 
-  <changeSet id="00000000000003-message" author="codecake">
+  <changeSet id="00000000000003-message" author="myuser">
     <createTable tableName="message">
       <column name="id" type="bigint">
         <constraints primaryKey="true" nullable="false"/>

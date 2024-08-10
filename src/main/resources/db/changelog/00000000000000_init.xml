@@ -3,7 +3,7 @@
                    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
                                        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
 
-    <changeSet id="00000000000000-event" author="codecake">
+    <changeSet id="00000000000000-event" author="myuser">
         <createTable tableName="event_publication">
             <column name="id" type="UUID">
                 <constraints primaryKey="true" nullable="false"/>

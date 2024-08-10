@@ -10,7 +10,6 @@ import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import org.jilt.Builder;
-import com.whatsup.whatsclone.infrastructure.secondary.entity.AuthorityEntityBuilder;
 
 import java.util.Objects;
 import java.util.Set;
@@ -38,16 +37,19 @@ public class AuthorityEntity {
 
     // prvi mapper za nas authority s ove strane authorities to set authoritie-a
     public static Set<AuthorityEntity> from(Set<Authority> authorities) {
-        return authorities.stream()
-                .map(authority -> AuthorityEntityBuilder.authorityEntity().name(authority.getName().name()).build())
-                .collect(Collectors.toSet());
+        return authorities
+                .stream()
+                .map(authority ->
+                        com.whatsup.whatsclone.infrastructure.secondary.entity.AuthorityEntityBuilder.authorityEntity()
+                                .name(authority.getName().name()).build()).collect(Collectors.toSet());
                        
     }
 
     // sada reverse
     public static Set<Authority> toDomain(Set<AuthorityEntity> authorityEntity){
         return authorityEntity.stream()
-                .map(authority -> AuthorityBuilder.authority().name(new AuthorityName(authority.name)).build())
+                .map(authority -> AuthorityBuilder.authority()
+                        .name(new AuthorityName(authority.name)).build())
                 .collect(Collectors.toSet());
     }
 
