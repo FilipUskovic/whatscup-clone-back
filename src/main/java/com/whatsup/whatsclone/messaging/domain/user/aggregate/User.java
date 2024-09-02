@@ -1,11 +1,16 @@
 package com.whatsup.whatsclone.messaging.domain.user.aggregate;
 
+import com.whatsup.whatsclone.messaging.domain.user.aggregate.AuthorityBuilder;
+import com.whatsup.whatsclone.messaging.domain.user.aggregate.UserBuilder;
 import com.whatsup.whatsclone.messaging.domain.user.valueobject.*;
 import com.whatsup.whatsclone.shared.error.domain.Assert;
 import org.jilt.Builder;
 
 import java.time.Instant;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Builder
 public class User {
@@ -45,11 +50,49 @@ public class User {
         Assert.notNull("authorities", authorities);
     }
 
-    private void updateFromUser(User user){
+    public void updateFromUser(User user){
         this.email = user.email;
         this.lastName = user.lastName;
         this.firstName = user.firstName;
         this.imageUrl = user.imageUrl;
+    }
+
+    // extract informacije unutar token-a i vrati user-a
+    public static User fromTokenAttributes(Map<String, Object> attributes, List<String> rolesFromAccessToken) {
+        UserBuilder userBuilder = UserBuilder.user();
+        String sub = String.valueOf(attributes.get("sub"));
+        String userName = null;
+        if(attributes.containsKey("preferred_username")) {
+            userName = attributes.get("preferred_username").toString().toLowerCase();
+        }
+        if(attributes.containsKey("given_name")) {
+            userBuilder.firstName(new UserFirstName(attributes.get("given_name").toString()));
+        }else if(attributes.containsKey("nickname")) {
+            userBuilder.firstName(new UserFirstName(attributes.get("nickname").toString()));
+        }
+
+        if(attributes.containsKey("family_name")) {
+            userBuilder.lastName(new UserLastName( attributes.get("family_name").toString()));
+        }
+
+        if(attributes.containsKey("email")) {
+            userBuilder.email(new UserEmail(attributes.get("email").toString()));
+        }else if(sub.contains("|") && (userName != null && userName.contains("@"))) {
+            userBuilder.email(new UserEmail(userName));
+        }else {
+            userBuilder.email(new UserEmail(sub));
+        }
+
+        if(attributes.containsKey("image_url")) {
+            userBuilder.imageUrl(new UserImageUrl(attributes.get("image_url").toString()));
+        }
+
+        Set<Authority> authorities = rolesFromAccessToken.stream().map(
+                        authority -> AuthorityBuilder.authority().name(new AuthorityName(authority)).build())
+                .collect(Collectors.toSet());
+
+        userBuilder.authorities(authorities);
+        return userBuilder.build();
     }
 
     public void initFieldsForSignUp(){
