@@ -1,6 +1,6 @@
-package com.whatsup.whatsclone.infrastructure.primary;
+package com.whatsup.whatsclone.infrastructure.primary.user;
 
-import com.whatsup.whatsclone.infrastructure.primary.RestUserBuilder;
+import com.whatsup.whatsclone.infrastructure.primary.user.RestUserBuilder;
 import com.whatsup.whatsclone.messaging.domain.user.aggregate.User;
 import org.jilt.Builder;
 
@@ -15,7 +15,7 @@ public record RestUser(UUID publicId,
                        String imageUrl,
                        Set<RestAuthority> authorities) {
 
-    static RestUser from (User user) {
+     static RestUser from (User user) {
         RestUserBuilder restUserBuilder = RestUserBuilder.restUser();
         if (user.getImageUrl() != null) {
             restUserBuilder.imageUrl(user.getImageUrl().value());

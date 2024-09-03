@@ -1,5 +1,7 @@
 package com.whatsup.whatsclone.infrastructure.secondary.repository;
 
+import com.whatsup.whatsclone.infrastructure.secondary.entity.ConversationEntity;
+import com.whatsup.whatsclone.infrastructure.secondary.entity.UserEntity;
 import com.whatsup.whatsclone.messaging.domain.message.aggregate.Conversation;
 import com.whatsup.whatsclone.messaging.domain.message.aggregate.ConversationToCreate;
 import com.whatsup.whatsclone.messaging.domain.message.repository.ConversationRepository;
@@ -12,41 +14,59 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Repository
 public class SpringDataConversationRepository implements ConversationRepository {
+
+    private final JpaConversationRepository jpaConversationRepository;
+
+    public SpringDataConversationRepository(JpaConversationRepository jpaConversationRepository) {
+        this.jpaConversationRepository = jpaConversationRepository;
+    }
+
     @Override
     public Conversation save(ConversationToCreate conversation, List<User> members) {
-        return null;
+        ConversationEntity newConversatioEntity = ConversationEntity.from(conversation);
+        newConversatioEntity.setUsers(UserEntity.from(members));
+        ConversationEntity newConversationSaved = jpaConversationRepository.saveAndFlush(newConversatioEntity);
+        return ConversationEntity.toDomain(newConversationSaved);
     }
 
     @Override
     public Optional<Conversation> get(ConversationPublicId conversationPublicId) {
-        return Optional.empty();
+        return jpaConversationRepository.findOneByPublicId(conversationPublicId.value())
+                .map(ConversationEntity::toDomain);
     }
 
     @Override
     public Page<Conversation> getConversationByUserPublicId(UserPublicId publicId, Pageable pageable) {
-        return null;
+        return jpaConversationRepository.findAllByUsersPublicId(publicId.value(), pageable)
+                .map(ConversationEntity::toDomain);
     }
 
     @Override
     public int deleteByPublicId(UserPublicId userPublicId, ConversationPublicId conversationPublicId) {
-        return 0;
+        return jpaConversationRepository
+                .deleteByUsersPublicIdAndPublicId(userPublicId.value(), conversationPublicId.value());
     }
 
     @Override
     public Optional<Conversation> getConversationByUsersPublicIdAndPublicId(UserPublicId userPublicId, ConversationPublicId conversationPublicId) {
-        return Optional.empty();
+        return jpaConversationRepository.findOneByUsersPublicIdAndPublicId(userPublicId.value(), conversationPublicId.value())
+                .map(ConversationEntity::toDomain);
     }
 
     @Override
     public Optional<Conversation> getConversationByUserPublicIds(List<UserPublicId> publicIds) {
-        return Optional.empty();
+        List<UUID> userUUIDs = publicIds.stream().map(UserPublicId::value).toList();
+        return jpaConversationRepository.findOneByUsersPublicIdIn(userUUIDs, userUUIDs.size())
+                .map(ConversationEntity::toDomain);
     }
 
     @Override
     public Optional<Conversation> getOneByPublicId(ConversationPublicId conversationPublicId) {
-        return Optional.empty();
+        return jpaConversationRepository.findOneByPublicId(conversationPublicId.value())
+                .map(ConversationEntity::toDomain);
     }
 }

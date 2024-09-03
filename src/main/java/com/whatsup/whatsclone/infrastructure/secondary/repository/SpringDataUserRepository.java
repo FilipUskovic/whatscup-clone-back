@@ -1,5 +1,6 @@
 package com.whatsup.whatsclone.infrastructure.secondary.repository;
 
+import com.whatsup.whatsclone.infrastructure.secondary.entity.UserEntity;
 import com.whatsup.whatsclone.messaging.domain.message.vo.ConversationPublicId;
 import com.whatsup.whatsclone.messaging.domain.user.aggregate.User;
 import com.whatsup.whatsclone.messaging.domain.user.repository.UserRepository;
@@ -12,12 +13,30 @@ import org.springframework.stereotype.Repository;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
 
 @Repository
 public class SpringDataUserRepository implements UserRepository {
+
+    private final JpaUserRepository jpaUserRepository;
+
+    public SpringDataUserRepository(JpaUserRepository jpaUserRepository) {
+        this.jpaUserRepository = jpaUserRepository;
+    }
+
     @Override
     public void save(User user) {
-
+        if (user.getDbId() != null) {
+            Optional<UserEntity> userToUpdateOpt = jpaUserRepository.findById(user.getDbId());
+            if (userToUpdateOpt.isPresent()) {
+                UserEntity userToUpdate = userToUpdateOpt.get();
+                userToUpdate.updateFromUser(user);
+                jpaUserRepository.saveAndFlush(userToUpdate);
+            }
+        } else {
+            jpaUserRepository.save(UserEntity.from(user));
+        }
     }
 
     @Override
@@ -27,17 +46,27 @@ public class SpringDataUserRepository implements UserRepository {
 
     @Override
     public Optional<User> getOneByEmail(UserEmail userEmail) {
-        return Optional.empty();
+        return jpaUserRepository.findByEmail(userEmail.value())
+                .map(UserEntity::toDomain);
     }
 
     @Override
-    public List<User> getByPublicIds(List<UserPublicId> userPublicIds) {
+    public List<User> getByPublicId(Set<UserPublicId> publicIds) {
         return List.of();
     }
 
     @Override
+    public List<User> getByPublicIds(Set<UserPublicId> userPublicIds) {
+        List<UUID> rawPublicIds = userPublicIds.stream().map(UserPublicId::value).toList();
+        return jpaUserRepository.findByPublicIdIn(rawPublicIds)
+                .stream()
+                .map(UserEntity::toDomain)
+                .toList();
+    }
+
+    @Override
     public Page<User> search(Pageable pageable, String query) {
-        return null;
+        return jpaUserRepository.search(pageable, query).map(UserEntity::toDomain);
     }
 
     @Override
@@ -47,6 +76,13 @@ public class SpringDataUserRepository implements UserRepository {
 
     @Override
     public List<User> getRecipientByConversationIdExcludingReader(ConversationPublicId conversationPublicId, UserPublicId readerPublicId) {
-        return List.of();
+        return jpaUserRepository.findByConversationsPublicIdAndPublicIdIsNot(conversationPublicId.value(), readerPublicId.value())
+                .stream().map(UserEntity::toDomain).toList();
+    }
+
+    @Override
+    public Optional<User> getOneByPublicId(UserPublicId userPublicId) {
+        return jpaUserRepository.findOneByPublicId(userPublicId.value())
+                .map(UserEntity::toDomain);
     }
 }

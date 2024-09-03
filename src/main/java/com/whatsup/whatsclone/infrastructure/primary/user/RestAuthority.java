@@ -1,6 +1,6 @@
-package com.whatsup.whatsclone.infrastructure.primary;
+package com.whatsup.whatsclone.infrastructure.primary.user;
 
-import com.whatsup.whatsclone.infrastructure.primary.RestAuthorityBuilder;
+import com.whatsup.whatsclone.infrastructure.primary.user.RestAuthorityBuilder;
 import com.whatsup.whatsclone.messaging.domain.user.aggregate.Authority;
 import org.jilt.Builder;
 
